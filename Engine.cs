@@ -127,7 +127,7 @@ namespace MinesweeperEngine
 				while (generatedMineCount != mineCount)
 				{
 					var x = (uint)random.Next(0, (int)width - 1);
-					var y = (uint)random.Next(0, (int)width - 1);
+					var y = (uint)random.Next(0, (int)height - 1);
 					
 					var field = GetField(x, y);
 
@@ -141,41 +141,41 @@ namespace MinesweeperEngine
 
 					generatedMineCount++;
 				}
+			}
 
-				Log("Generating indicators");
+			Log("Generating indicators");
+			{
+				EnumerateAll((field, x, y) =>
 				{
-					EnumerateAll((field, x, y) =>
+					if (field == null)
 					{
-						if (field == null)
+						uint mineCount = 0;
+
+						EnumerateInRange(x, y, 1, (mine, mx, my) =>
 						{
-							uint mineCount = 0;
+							if (mine != null && mine.Type == FieldType.Mine)
+								mineCount++;
 
-							EnumerateInRange(x, y, 1, (mine, mx, my) =>
-							{
-								if (mine != null && mine.Type == FieldType.Mine)
-									mineCount++;
+							return false;
+						});
 
-								return false;
-							});
+						if (mineCount > 0)
+							fields[x, y] = new FieldIndicator(mineCount);
+					}
 
-							if (mineCount > 0)
-								fields[x, y] = new FieldIndicator(mineCount);
-						}
+					return false;
+				});
+			}
 
-						return false;
-					});
-				}
-
-				Log("Fill empty fields");
+			Log("Fill empty fields");
+			{
+				EnumerateAll((field, x, y) =>
 				{
-					EnumerateAll((field, x, y) =>
-					{
-						if (field == null)
-							fields[x, y] = new FieldEmpty();
+					if (field == null)
+						fields[x, y] = new FieldEmpty();
 
-						return false;
-					});
-				}
+					return false;
+				});
 			}
 		}
 
