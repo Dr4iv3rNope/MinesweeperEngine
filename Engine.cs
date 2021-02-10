@@ -78,10 +78,11 @@ namespace MinesweeperEngine
 		public bool Flag(uint x, uint y)
 		{
 			var field = GetField(x, y);
+			var isFlagged = field.OnFlag(x, y);
 			
 			if (field.Type == FieldType.Mine)
 			{
-				if (field.OnFlag(x, y))
+				if (isFlagged)
 					defusedMineCount++;
 				else
 					defusedMineCount--;
