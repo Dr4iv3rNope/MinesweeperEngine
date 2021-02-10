@@ -27,7 +27,11 @@ namespace MinesweeperEngine
 
 		uint DefusedMineCount { get; }
 
-		void NewGame(uint width, uint height, uint mineCount);
+		// return true if game is successfully started
+		bool NewGame(uint width, uint height, uint mineCount);
+
+		// return true if game is successfully stopped
+		bool StopGame();
 
 		IField GetField(uint x, uint y);
 

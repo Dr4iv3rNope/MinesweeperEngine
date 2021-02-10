@@ -46,8 +46,25 @@ namespace MinesweeperEngine
 		private void SetState(EngineState newState)
 		{
 			Log($"State: {newState}");
+
+			switch (newState)
+			{
+				case EngineState.Win:
+				case EngineState.Lose:
+				{
+					StopGame();
+					break;
+				}
+			}
+
 			OnStateChange?.Invoke(newState);
 			state = newState;
+		}
+
+		private void CheckState(EngineState needed)
+		{
+			if (state != needed)
+				throw new Exception($"Game state is not {needed}");
 		}
 
 		public uint Width => width;
@@ -62,6 +79,10 @@ namespace MinesweeperEngine
 
 		public bool Defuse(uint x, uint y)
 		{
+			Log($"Defusing x:{x} y:{y}...");
+
+			CheckState(EngineState.Playing);
+			
 			var field = GetField(x, y);
 			
 			if (field.OnDefuse(x, y, field))
@@ -77,6 +98,10 @@ namespace MinesweeperEngine
 
 		public bool Flag(uint x, uint y)
 		{
+			Log($"Flagging x:{x} y:{y}...");
+
+			CheckState(EngineState.Playing);
+			
 			var field = GetField(x, y);
 			var isFlagged = field.OnFlag(x, y);
 			
@@ -179,11 +204,29 @@ namespace MinesweeperEngine
 			}
 		}
 
-		public void NewGame(uint width, uint height, uint mineCount)
+		public bool NewGame(uint width, uint height, uint mineCount)
 		{
+			switch (state)
+			{
+				case EngineState.Generating:
+				case EngineState.Playing:
+				{
+					return false;
+				}
+			}
+
 			Log($"Starting new game (w:{width}, h:{height}, mc:{mineCount})");
 
-			this.width = width > 1 ? width : throw new Exception("width is so small");
+			if (width <= 1)
+				throw new ArgumentException("Width is too small");
+
+			if (height <= 1)
+				throw new ArgumentException("Height is too small");
+
+			if (mineCount < 1 && mineCount > (width * height))
+				throw new ArgumentException("Mine count must be in range [1,w*h]");
+
+			this.width = width;
 			this.height = height;
 
 			this.mineCount = mineCount;
@@ -198,6 +241,39 @@ namespace MinesweeperEngine
 			SetState(EngineState.Generating);
 			FillFields();
 			SetState(EngineState.Playing);
+
+			return true;
+		}
+
+		public bool StopGame()
+		{
+			switch (state)
+			{
+				case EngineState.Idle:
+				case EngineState.Win:
+				case EngineState.Lose:
+				{
+					return false;
+				}
+			}
+
+			Log("Stopping game");
+
+			fields = null;
+
+			mineCount = 0;
+			defusedMineCount = 0;
+
+			width = 0;
+			height = 0;
+
+			SetState(EngineState.Idle);
+
+			Log("Starting collecting garbage");
+			GC.Collect();
+			Log("Garbage has been collected!");
+
+			return true;
 		}
 	}
 }
