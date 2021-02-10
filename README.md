@@ -16,15 +16,15 @@ namespace MinesweeperEngineTest
 
             // creating 10x10 field
             // with mine count 10
-            Engine.Instance.NewGame(10, 10, 10);
+            Engine.Instance.NewGame(5, 8, 10);
 
             // main game loop
             while (Engine.Instance.State == EngineState.Playing)
             {
-                // preety printing game field
-                for (int y = -1; y < Engine.Instance.Width; y++)
+                // pretty printing game field
+                for (int y = -1; y < Engine.Instance.Height; y++)
                 {
-                    for (int x = -1; x < Engine.Instance.Height; x++)
+                    for (int x = -1; x < Engine.Instance.Width; x++)
                     {
                         // if this is left top corner, then we fill it with spaces
                         if (x == -1 && y == -1)
